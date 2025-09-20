@@ -72,14 +72,19 @@ minesweeper.calc_nums()
 
 
 while(not minesweeper.lost):
-    print(len(minesweeper.revealed))
+    actual_revealed = []
     for i in range(9):
         for j in range(9):
             if(minesweeper.revealed[i * minesweeper.width + j] == -1):
+                actual_revealed.append(0)
                 print("*", end=" ")
             else:
                 print(minesweeper.revealed[i * minesweeper.width + j], end=" ")
+                actual_revealed.append(minesweeper.board[i * minesweeper.width + j])
         print("")
     guess = input("Reveal a tile (x,y): ")
     guess = guess.split(',')
     minesweeper.reveal(int(guess[0]), int(guess[1]))
+    if actual_revealed == minesweeper.board:
+        print("You won!")
+        minesweeper.lost = True
