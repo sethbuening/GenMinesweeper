@@ -1,2 +1,2 @@
 # GenMinesweeper
-Genetic algorithm to play minesweeper; created for the Hello World 2025 hackathon at Purdue West Lafayette
+Created minesweeper as well as a genetic algorithm to play it; created for the Hello World 2025 hackathon at Purdue West Lafayette
