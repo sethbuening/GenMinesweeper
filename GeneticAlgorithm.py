@@ -8,11 +8,12 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 
 random.seed(0)
 
-GRID_X = 9
-GRID_Y = 9
+WIDTH = 14
+HEIGHT = 14
+BOMBS = 40
 
 # Initialize AI constants
-NEURONS = [GRID_X*GRID_Y, math.floor(GRID_X*GRID_Y/4), math.floor(GRID_X*GRID_Y/16), math.floor(GRID_X*GRID_Y/4), GRID_X*GRID_Y] # Manually set NEURONS to be the number of neurons in each layer of a single network
+NEURONS = [WIDTH*HEIGHT, math.floor(WIDTH*HEIGHT/4), math.floor(WIDTH*HEIGHT/16), math.floor(WIDTH*HEIGHT/4), WIDTH*HEIGHT] # Manually set NEURONS to be the number of neurons in each layer of a single network
 WEIGHTS = 0
 BIASES = 0
 
@@ -24,7 +25,7 @@ PARAMETERS = WEIGHTS+BIASES
 INITIAL_RANGE = 0.5
 
 # Constants for the evaluation loop
-POPULATION_SIZE = 200
+POPULATION_SIZE = 2000
 LOADING_SIZE = 50
 
 # Selection constants
@@ -33,23 +34,15 @@ TS = 3 # Tournament size
 NOT = int(POPULATION_SIZE * (1-ELITEP)) # to keep the population size the same over time
 
 # Probabilites for crossover and mutation
-CXPB = 0.75 # 0.75
-MUTPB = 0.2 # 0.2
+CXPB = 0.85 # 0.75
+MUTPB = 0.3 # 0.2
 
-avgRuntime = 0.5 # the average time it takes for a simulation to run, in seconds. Only used for loading. 7/5 is average for one simulation run without repeat.
+avgRuntime = 0.01 # the average time it takes for a simulation to run, in seconds. Only used for loading. 7/5 is average for one simulation run without repeat.
 
 def evaluate_individual(individual):
     weights = [individual[i] for i in range(WEIGHTS)]
     biases = [individual[i] for i in range(WEIGHTS, PARAMETERS)]
-    return minesweeper1.run(weights, biases, neurons=NEURONS, test = False) # minesweeper run function returns the score
-
-# TODO: run function
-    # create the board
-    # start the loop: 
-        # input the current board into the network
-        # get the output value for the flattened board array
-        # Reveal that tile
-    # If lose or win, return the calculated score, based on the number of revealed tiles
+    return minesweeper1.run(WIDTH, HEIGHT, BOMBS, weights, biases, neurons=NEURONS) # minesweeper run function returns the score
 
 # Multiple of the same individual may end up selected, but this is ok because they will all crossover and mutate
 def select_individuals(population):
@@ -73,7 +66,7 @@ toolbox.register("clone", copy.deepcopy)
 toolbox.register("evaluate", evaluate_individual)
 toolbox.register("select", select_individuals)
 toolbox.register("mate", tools.cxTwoPoint) # Previously cxUniform, indpb=0.5. indpb = Probability for the genes to switch
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.15, indpb=0.05) # mean = 0, stdev = 0.15, 
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.15, indpb=0.1) # mean = 0, stdev = 0.15, 
                                                                             # chance for each value (not individual) to mutate = 0.05
 # function to initialize population
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -100,7 +93,7 @@ print(f"Gen1:{str(len(population))}Evaluated" + " "*(35+LOADING_SIZE))
 fitnesses = [ind.fitness.values[0] for ind in population]
 stdev = statistics.stdev(fitnesses)
 bestFitness = max(fitnesses)
-print(f"Gen1:BestFitness: {str(bestFitness)} |stdev: {str(stdev)}")
+print(f"Gen1:BestFitness: {str(bestFitness)} | stdev: {str(stdev)}")
 hallOfFame = [toolbox.clone(tools.selBest(population, 1)[0])]
 
 
@@ -109,9 +102,9 @@ hallOfFame = [toolbox.clone(tools.selBest(population, 1)[0])]
 
 # Begin the loop (selection, crossover, mutation, evaluate fitness)
 # Loop runs until a specified fitness goal is reached
-fitnessGoal = -500 # A little bit under 0 is the best score possible
+fitnessGoal = WIDTH*HEIGHT - BOMBS # A little bit under 0 is the best score possible
 generationNum = 2 # First generation has already run
-while (bestFitness < fitnessGoal and stdev != 0): #bestFitness < fitnessGoal
+while (bestFitness < fitnessGoal): #bestFitness < fitnessGoal
     # Selection
     offspring = toolbox.select(population)
     mutCount = 0
@@ -163,6 +156,6 @@ while (bestFitness < fitnessGoal and stdev != 0): #bestFitness < fitnessGoal
     population = offspring[:]
     hallOfFame.append(toolbox.clone(tools.selBest(population, 1)[0]))
     generationNum += 1
-print(hallOfFame[-1])
+#print(hallOfFame[-1])
+print("Ran all of the code")
 # TODO: Write the entire hall of fame into a separate file as it processes
-pybullet.disconnect()

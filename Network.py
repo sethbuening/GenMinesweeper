@@ -24,15 +24,18 @@ class NeuralNetwork(t.nn.Module):
                 self.network[i].weight.data = t.tensor(self.weights[sum(self.weightsCount[:i]):sum(self.weightsCount[:i+1])], dtype=t.float32).view(neurons[i+1], neurons[i])  # [6, 2]
                 self.network[i].bias.data = t.tensor(self.biases[sum(neurons[1:i+1]):sum(neurons[1:i+2])], dtype=t.float32)  # [16]
 
-    def forward(self, x):
+    def forward(self, x, minesweeper):
         with t.no_grad():
             for i in range(self.layers - 1):
                 x = t.relu(self.network[i](x)) # used to use tanh() but switched to relu for now
                 #print(f"Layer {i+1} output: {str(x)}")
-            x = t.softmax(self.network[-1](x), dim=1)
+            x = t.softmax(self.network[-1](x), dim=0)
             output = t.flatten(x)
             #print("Final output: " + str(output))
             output = [value.item() for value in output] # converts from tensor to list
-            output = output.index(max(output))
-            
-            return output # Returns 0 to (GRID_X*GRID_Y)-1     The index of the slot to click on for the minesweeper
+            output = sorted(output, reverse=True)
+
+            # Return the highest confidence tile that has not already been revealed
+            for i in range(len(output)):
+                if(minesweeper.revealed[i] == -1):
+                    return i # Returns 0 to (GRID_X*GRID_Y)-1     The index of the slot to click on for the minesweeper

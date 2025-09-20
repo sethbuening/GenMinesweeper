@@ -1,9 +1,10 @@
-import random
+import random, Network, torch
 class Minesweeper:
     directions = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
 
     def __init__(self, width=9, height=9, mines=10):
         self.lost = False
+        self.won = False
         self.width = width
         self.height = height
         self.board = []
@@ -62,24 +63,43 @@ class Minesweeper:
                     if(self.board[loc[1] * self.width + loc[0]] != 9):
                         self.revealed[loc[1] * self.width + loc[0]] = self.board[loc[1] * self.width + loc[0]]
         elif self.board[y*self.width + x] == 9:
-            print("You lose")
             self.lost = True
         else:
             self.revealed[y*self.width + x] = self.board[y*self.width + x]
-minesweeper = Minesweeper()
-minesweeper.place_mines()
-minesweeper.calc_nums()
+        # Win check
+        self.won = True
+        for i in range(self.height):
+            for j in range(self.width):
+                if(self.revealed[i*self.width + j] == -1 and self.board[i*self.width + j] != 9):
+                    self.won = False
+                    break
+            if(not self.won):
+                break
+def run (WIDTH, HEIGHT, BOMBS, weights, biases, neurons):
+    # Run the minesweeper game 5 times, averaging the scores together
+    average_score = 0
+    network = Network.NeuralNetwork(weights, biases, neurons)
+    for _ in range(3):
+        minesweeper = Minesweeper(WIDTH, HEIGHT, BOMBS)
+        minesweeper.place_mines()
+        minesweeper.calc_nums()
 
+        index = minesweeper.board.index(0)
+        minesweeper.reveal(index%WIDTH, int(index/HEIGHT))
 
-while(not minesweeper.lost):
-    print(len(minesweeper.revealed))
-    for i in range(9):
-        for j in range(9):
-            if(minesweeper.revealed[i * minesweeper.width + j] == -1):
-                print("*", end=" ")
-            else:
-                print(minesweeper.revealed[i * minesweeper.width + j], end=" ")
-        print("")
-    guess = input("Reveal a tile (x,y): ")
-    guess = guess.split(',')
-    minesweeper.reveal(int(guess[0]), int(guess[1]))
+        while (not (minesweeper.lost or minesweeper.won)):
+            input = torch.tensor(minesweeper.revealed, dtype=torch.float32)
+            output = network.forward(input, minesweeper)
+
+            x = output % minesweeper.width
+            y = int(output / minesweeper.width)
+
+            minesweeper.reveal(x, y)
+        # Calculate the score
+        score = 0
+        for i in range(minesweeper.height):
+            for j in range(minesweeper.width):
+                if(minesweeper.revealed[i*WIDTH + j] != -1):
+                    score += 1
+        average_score += score
+    return average_score/5
