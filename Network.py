@@ -27,7 +27,7 @@ class NeuralNetwork(t.nn.Module):
     def forward(self, x, minesweeper):
         with t.no_grad():
             for i in range(self.layers - 1):
-                x = t.relu(self.network[i](x)) # used to use tanh() but switched to relu for now
+                x = t.tanh(self.network[i](x)) # dont read this comment used to use tanh() but switched to relu for now
                 #print(f"Layer {i+1} output: {str(x)}")
             x = t.softmax(self.network[-1](x), dim=0)
             output = t.flatten(x)

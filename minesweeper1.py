@@ -1,4 +1,4 @@
-import random, Network, torch
+import random, Network, torch, time
 class Minesweeper:
     directions = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
 
@@ -75,11 +75,11 @@ class Minesweeper:
                     break
             if(not self.won):
                 break
-def run (WIDTH, HEIGHT, BOMBS, weights, biases, neurons):
+def run (WIDTH, HEIGHT, BOMBS, weights, biases, neurons, test):
     # Run the minesweeper game 5 times, averaging the scores together
     average_score = 0
     network = Network.NeuralNetwork(weights, biases, neurons)
-    for _ in range(3):
+    for _ in range(2):
         minesweeper = Minesweeper(WIDTH, HEIGHT, BOMBS)
         minesweeper.place_mines()
         minesweeper.calc_nums()
@@ -95,6 +95,9 @@ def run (WIDTH, HEIGHT, BOMBS, weights, biases, neurons):
             y = int(output / minesweeper.width)
 
             minesweeper.reveal(x, y)
+
+            if(test):
+                time.sleep(1)
         # Calculate the score
         score = 0
         for i in range(minesweeper.height):
@@ -102,4 +105,4 @@ def run (WIDTH, HEIGHT, BOMBS, weights, biases, neurons):
                 if(minesweeper.revealed[i*WIDTH + j] != -1):
                     score += 1
         average_score += score
-    return average_score/5
+    return average_score/2

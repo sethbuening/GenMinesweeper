@@ -8,9 +8,9 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 
 random.seed(0)
 
-WIDTH = 14
-HEIGHT = 14
-BOMBS = 40
+WIDTH = 12
+HEIGHT = 12
+BOMBS = 15
 
 # Initialize AI constants
 NEURONS = [WIDTH*HEIGHT, math.floor(WIDTH*HEIGHT/4), math.floor(WIDTH*HEIGHT/16), math.floor(WIDTH*HEIGHT/4), WIDTH*HEIGHT] # Manually set NEURONS to be the number of neurons in each layer of a single network
@@ -25,24 +25,24 @@ PARAMETERS = WEIGHTS+BIASES
 INITIAL_RANGE = 0.5
 
 # Constants for the evaluation loop
-POPULATION_SIZE = 2000
+POPULATION_SIZE = 20000
 LOADING_SIZE = 50
 
 # Selection constants
-ELITEP = .02 #.02 # Fraction of top individuals that will proceed no matter what
-TS = 3 # Tournament size
+ELITEP = .05 #.02 # Fraction of top individuals that will proceed no matter what
+TS = 125 #3 # Tournament size
 NOT = int(POPULATION_SIZE * (1-ELITEP)) # to keep the population size the same over time
 
 # Probabilites for crossover and mutation
-CXPB = 0.85 # 0.75
-MUTPB = 0.3 # 0.2
+CXPB = 0.70 # 0.75
+MUTPB = 0.175 # 0.2
 
 avgRuntime = 0.01 # the average time it takes for a simulation to run, in seconds. Only used for loading. 7/5 is average for one simulation run without repeat.
 
 def evaluate_individual(individual):
     weights = [individual[i] for i in range(WEIGHTS)]
     biases = [individual[i] for i in range(WEIGHTS, PARAMETERS)]
-    return minesweeper1.run(WIDTH, HEIGHT, BOMBS, weights, biases, neurons=NEURONS) # minesweeper run function returns the score
+    return minesweeper1.run(WIDTH, HEIGHT, BOMBS, weights, biases, neurons=NEURONS, test=False) # minesweeper run function returns the score
 
 # Multiple of the same individual may end up selected, but this is ok because they will all crossover and mutate
 def select_individuals(population):
@@ -66,7 +66,7 @@ toolbox.register("clone", copy.deepcopy)
 toolbox.register("evaluate", evaluate_individual)
 toolbox.register("select", select_individuals)
 toolbox.register("mate", tools.cxTwoPoint) # Previously cxUniform, indpb=0.5. indpb = Probability for the genes to switch
-toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.15, indpb=0.1) # mean = 0, stdev = 0.15, 
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.15, indpb=0.05) # mean = 0, stdev = 0.15, 
                                                                             # chance for each value (not individual) to mutate = 0.05
 # function to initialize population
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -102,7 +102,7 @@ hallOfFame = [toolbox.clone(tools.selBest(population, 1)[0])]
 
 # Begin the loop (selection, crossover, mutation, evaluate fitness)
 # Loop runs until a specified fitness goal is reached
-fitnessGoal = WIDTH*HEIGHT - BOMBS # A little bit under 0 is the best score possible
+fitnessGoal = WIDTH*HEIGHT - BOMBS # 114
 generationNum = 2 # First generation has already run
 while (bestFitness < fitnessGoal): #bestFitness < fitnessGoal
     # Selection
